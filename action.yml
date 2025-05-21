@@ -1,0 +1,101 @@
+name: Create detached commit
+description: >-
+  Create a detached commit through GitHub API.
+  Later, a branch or tag can be created or updated to point to this commit.
+  Unlike GraphQL createCommitOnBranch(), this allows updating a pull request
+  without triggering unnecessary intermediate events/CI runs.
+
+inputs:
+  message:
+    description: Commit message
+    required: true
+
+  files:
+    description: Files to add/update. One path/name per line
+    required: true
+
+  parent:
+    description: Parent commit SHA
+    default: ${{ github.sha }}
+    required: true
+
+  repository:
+    description: Repository name with owner
+    default: ${{ github.repository }}
+    required: true
+
+  github-token:
+    description: GitHub API token to use
+    default: ${{ github.token }}
+    required: true
+
+outputs:
+  sha:
+    description: Created commit SHA
+    value: ${{ steps.commit.outputs.result }}
+
+runs:
+  using: composite
+  steps:
+    - id: tree
+      uses: actions/github-script@v7
+      env:
+        INPUT_FILES: ${{ inputs.files }}
+        INPUT_PARENT: ${{ inputs.parent }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+
+      with:
+        github-token: ${{ inputs.github-token }}
+        result-encoding: string
+        script: |
+          const { readFileSync } = await import('node:fs');
+
+          const [owner, repo] = core.getInput('repository', { required: true }).split('/');
+          const parent = core.getInput('parent', { required: true });
+          const files = core.getMultilineInput('files', { required: true });
+          const tree = files.map(path => {
+            return {
+              path,
+              type: 'blob',
+              mode: '100644',
+              content: readFileSync(path, { encoding: 'utf-8' }),
+            }
+          });
+
+          const { data } = await github.request('POST /repos/{owner}/{repo}/git/trees', {
+            owner,
+            repo,
+            base_tree: parent,
+            tree,
+          });
+
+          return data.sha;
+
+    - id: commit
+      uses: actions/github-script@v7
+      env:
+        INPUT_TREE: ${{ steps.tree.outputs.result }}
+        INPUT_MESSAGE: ${{ inputs.message }}
+        INPUT_PARENT: ${{ inputs.parent }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+
+      with:
+        github-token: ${{ inputs.github-token }}
+        result-encoding: string
+        script: |
+          const [owner, repo] = core.getInput('repository', { required: true }).split('/');
+          const parent = core.getInput('parent', { required: true });
+          const tree = core.getInput('tree', { required: true });
+          const message = core.getInput('message', { required: true });
+
+          const { data } = await github.request('POST /repos/{owner}/{repo}/git/commits', {
+            owner,
+            repo,
+            parents: [parent],
+            tree,
+            message,
+          });
+
+          console.log('Created commit %s', data.html_url);
+
+          return data.sha;

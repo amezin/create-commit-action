@@ -1,0 +1,35 @@
+name: test
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    if: github.event.pull_request.head.repo.node_id == github.event.pull_request.base.repo.node_id
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: date -u >test-file.txt
+
+      - id: test-commit
+        uses: ./.
+        with:
+          message: 'Auto-generated test commit'
+          files: test-file.txt
+
+      - run: git fetch origin "$COMMIT"
+        env:
+          COMMIT: ${{ steps.test-commit.outputs.sha }}
+
+      - run: test "$(git show FETCH_HEAD:test-file.txt)" = "$(cat test-file.txt)"
+      - run: test "$(git log --format=%B -n 1 FETCH_HEAD)" = "Auto-generated test commit"
