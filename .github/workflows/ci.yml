@@ -1,4 +1,4 @@
-name: test
+name: ci
 
 on:
   pull_request:
@@ -8,11 +8,23 @@ on:
       - main
 
 jobs:
-  e2e:
+  dist-check:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - run: npm ci
+      - run: npm run package
+      - run: git diff --exit-code --color --ignore-space-at-eol --text dist/
+
+  test:
+    runs-on: ubuntu-latest
+    needs: dist-check
     if: github.event.pull_request.head.repo.node_id == github.event.pull_request.base.repo.node_id
-
     permissions:
       contents: write
 
@@ -33,3 +45,6 @@ jobs:
 
       - run: test "$(git show FETCH_HEAD:test-file.txt)" = "$(cat test-file.txt)"
       - run: test "$(git log --format=%B -n 1 FETCH_HEAD)" = "Auto-generated test commit"
+      - run: test "$(git rev-parse FETCH_HEAD:)" = "$TREE"
+        env:
+          TREE: ${{ steps.test-commit.outputs.tree_sha }}
