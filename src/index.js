@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import * as fs from 'node:fs';
 import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';
 
@@ -17,11 +17,22 @@ function getRepo() {
 
 async function createTree(octokit, owner, repo, parent, files) {
     const tree = files.map(path => {
+        const stat = fs.lstatSync(path);
+
+        if (stat.isSymbolicLink()) {
+            return {
+                path,
+                type: 'blob',
+                mode: '120000',
+                content: fs.readlinkSync(path, { encoding: 'utf-8' }),
+            }
+        }
+
         return {
-          path,
-          type: 'blob',
-          mode: '100644',
-          content: readFileSync(path, { encoding: 'utf-8' }),
+            path,
+            type: 'blob',
+            mode: (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644',
+            content: fs.readFileSync(path, { encoding: 'utf-8' }),
         }
     });
 

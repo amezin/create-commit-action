@@ -42,20 +42,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: date -u >test-file.txt
+      - run: mkdir testdir
+      - run: date -u >testdir/test-file.txt
+      - run: ln -s testdir/test-file.txt test-symlink
+      - run: echo '#!/bin/sh' >testdir/test-executable
+      - run: chmod a+x testdir/test-executable
 
       - id: test-commit
         uses: ./.
         with:
           message: 'Auto-generated test commit'
-          files: test-file.txt
+          files: |
+            testdir/test-file.txt
+            test-symlink
+            testdir/test-executable
 
       - run: git fetch origin "$COMMIT"
         env:
           COMMIT: ${{ steps.test-commit.outputs.sha }}
 
-      - run: test "$(git show FETCH_HEAD:test-file.txt)" = "$(cat test-file.txt)"
+      - run: test "$(git show FETCH_HEAD:testdir/test-file.txt)" = "$(cat testdir/test-file.txt)"
       - run: test "$(git log --format=%B -n 1 FETCH_HEAD)" = "Auto-generated test commit"
       - run: test "$(git rev-parse FETCH_HEAD:)" = "$TREE"
         env:
           TREE: ${{ steps.test-commit.outputs.tree_sha }}
+
+      - run: git clean -dxff
+
+      - run: test ! -e testdir/test-file.txt
+      - run: test ! -e testdir/test-executable
+      - run: test ! -e test-symlink
+
+      - run: git checkout "$COMMIT"
+        env:
+          COMMIT: ${{ steps.test-commit.outputs.sha }}
+
+      - run: test -e testdir/test-file.txt
+      - run: test ! -x testdir/test-file.txt
+      - run: test "$(cat test-symlink)" = "$(cat testdir/test-file.txt)"
+      - run: test -x testdir/test-executable
+
+      - run: test "$(readlink test-symlink)" = "testdir/test-file.txt"
+        if: runner.os != 'Windows'
