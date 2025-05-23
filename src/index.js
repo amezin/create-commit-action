@@ -1,4 +1,7 @@
+import { isUtf8 } from 'node:buffer';
 import * as fs from 'node:fs';
+import { Readable } from 'node:stream';
+
 import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';
 
@@ -27,29 +30,59 @@ class Repository {
         }));
     }
 
-    createBlob(path) {
+    async createBlob(buffer, encoding = 'base64') {
+        const { octokit, owner, repo } = this;
+        const { data } = await octokit.rest.git.createBlob({
+            owner,
+            repo,
+            content: buffer.toString(encoding),
+            encoding,
+        });
+
+        const { sha } = data;
+
+        core.info(`Created blob ${sha}`);
+
+        return sha;
+    }
+
+    async createFile(path) {
+        const type = 'blob';
+
         const stat = fs.lstatSync(path);
 
         if (stat.isSymbolicLink()) {
             return {
                 path,
-                type: 'blob',
+                type,
                 mode: '120000',
-                content: fs.readlinkSync(path, { encoding: 'utf-8' }),
+                content: fs.readlinkSync(path),
             }
+        }
+
+        const mode = (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644';
+        const buffer = fs.readFileSync(path);
+
+        if (isUtf8(buffer)) {
+            return {
+                path,
+                type,
+                mode,
+                content: buffer.toString('utf-8'),
+            };
         }
 
         return {
             path,
-            type: 'blob',
-            mode: (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644',
-            content: fs.readFileSync(path, { encoding: 'utf-8' }),
-        }
+            type,
+            mode,
+            sha: await this.createBlob(buffer),
+        };
     }
 
     async createTree(parent, files) {
         const { octokit, owner, repo } = this;
-        const tree = files.map(path => this.createBlob(path));
+        const tree = await Readable.from(files).map(path => this.createFile(path)).toArray();
 
         const { data } = await octokit.rest.git.createTree({
             owner,

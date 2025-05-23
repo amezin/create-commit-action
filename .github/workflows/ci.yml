@@ -48,6 +48,7 @@ jobs:
       - run: ln -s testdir/test-file.txt test-symlink
       - run: echo '#!/bin/sh' >testdir/test-executable
       - run: chmod a+x testdir/test-executable
+      - run: echo -n $'\xc3\x28' >invalid-utf8
 
       - id: test-commit
         uses: ./.
@@ -57,6 +58,7 @@ jobs:
             testdir/test-file.txt
             test-symlink
             testdir/test-executable
+            invalid-utf8
 
       - run: git fetch origin "$COMMIT"
         env:
@@ -73,6 +75,7 @@ jobs:
       - run: test ! -e testdir/test-file.txt
       - run: test ! -e testdir/test-executable
       - run: test ! -e test-symlink
+      - run: test ! -e invalid-utf8
 
       - run: git checkout "$COMMIT"
         env:
@@ -83,6 +86,7 @@ jobs:
       - run: diff test-symlink testdir/test-file.txt
       - run: test -x testdir/test-executable
       - run: test "$(cat testdir/test-executable)" = '#!/bin/sh'
+      - run: test "$(cat invalid-utf8)" = $'\xc3\x28'
 
       - run: test "$(readlink test-symlink)" = "testdir/test-file.txt"
         if: runner.os != 'Windows'
