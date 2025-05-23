@@ -82,6 +82,7 @@ jobs:
       - run: test ! -x testdir/test-file.txt
       - run: diff test-symlink testdir/test-file.txt
       - run: test -x testdir/test-executable
+      - run: test "$(cat testdir/test-executable)" = '#!/bin/sh'
 
       - run: test "$(readlink test-symlink)" = "testdir/test-file.txt"
         if: runner.os != 'Windows'
