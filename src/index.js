@@ -63,6 +63,10 @@ class Repository {
         core.setOutput('tree_sha', sha);
         core.setOutput('tree_url', url);
 
+        core.startGroup(`Created tree ${sha}`);
+        core.info(JSON.stringify(data.tree, undefined, ' '));
+        core.endGroup();
+
         return sha;
     }
 

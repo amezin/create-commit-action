@@ -31292,6 +31292,10 @@ class Repository {
         coreExports.setOutput('tree_sha', sha);
         coreExports.setOutput('tree_url', url);
 
+        coreExports.startGroup(`Created tree ${sha}`);
+        coreExports.info(JSON.stringify(data.tree, undefined, ' '));
+        coreExports.endGroup();
+
         return sha;
     }
 
