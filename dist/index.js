@@ -31231,21 +31231,32 @@ function requireGithub () {
 
 var githubExports = requireGithub();
 
-function getRepo() {
-    const qualified = coreExports.getInput('repository', { required: true });
-    const [owner, repo, ...extra] = qualified.split('/');
-
-    if (!owner || !repo || extra.length) {
-        throw new Error(
-          `Invalid repository '${qualified}'. Expected format {owner}/{repo}.`
+function readOnlyProperties(properties) {
+    return Object.fromEntries(
+        Object.entries(properties).map(
+            ([name, value]) => [name, { value }]
         )
-    }
-
-    return { owner, repo };
+    );
 }
 
-async function createTree(octokit, owner, repo, parent, files) {
-    const tree = files.map(path => {
+class Repository {
+    constructor(octokit, repository) {
+        const [owner, repo, ...extra] = repository.split('/');
+
+        if (!owner || !repo || extra.length) {
+            throw new Error(
+              `Invalid repository '${repository}'. Expected format {owner}/{repo}.`
+            )
+        }
+
+        Object.defineProperties(this, readOnlyProperties({
+            octokit,
+            owner,
+            repo,
+        }));
+    }
+
+    createBlob(path) {
         const stat = fs.lstatSync(path);
 
         if (stat.isSymbolicLink()) {
@@ -31263,51 +31274,60 @@ async function createTree(octokit, owner, repo, parent, files) {
             mode: (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644',
             content: fs.readFileSync(path, { encoding: 'utf-8' }),
         }
-    });
+    }
 
-    const { data } = await octokit.rest.git.createTree({
-        owner,
-        repo,
-        base_tree: parent,
-        tree,
-    });
+    async createTree(parent, files) {
+        const { octokit, owner, repo } = this;
+        const tree = files.map(path => this.createBlob(path));
 
-    const { sha, url } = data;
+        const { data } = await octokit.rest.git.createTree({
+            owner,
+            repo,
+            base_tree: parent,
+            tree,
+        });
 
-    coreExports.setOutput('tree_sha', sha);
-    coreExports.setOutput('tree_url', url);
+        const { sha, url } = data;
 
-    return sha;
-}
+        coreExports.setOutput('tree_sha', sha);
+        coreExports.setOutput('tree_url', url);
 
-async function createCommit(octokit, owner, repo, parent, tree, message) {
-    const { data } = await octokit.rest.git.createCommit({
-        owner,
-        repo,
-        parents: [parent],
-        tree,
-        message,
-    });
+        return sha;
+    }
 
-    const { sha, url, html_url } = data;
+    async createCommit(parent, tree, message) {
+        const { octokit, owner, repo } = this;
+        const { data } = await octokit.rest.git.createCommit({
+            owner,
+            repo,
+            parents: [parent],
+            tree,
+            message,
+        });
 
-    coreExports.setOutput('sha', sha);
-    coreExports.setOutput('url', url);
-    coreExports.setOutput('html_url', html_url);
+        const { sha, url, html_url } = data;
 
-    coreExports.info(`Created commit ${html_url}`);
+        coreExports.setOutput('sha', sha);
+        coreExports.setOutput('url', url);
+        coreExports.setOutput('html_url', html_url);
+
+        coreExports.info(`Created commit ${html_url}`);
+    }
 }
 
 try {
-    const { owner, repo } = getRepo();
     const parent = coreExports.getInput('parent', { required: true });
     const files = coreExports.getMultilineInput('files', { required: true });
     const message = coreExports.getInput('message', { required: true });
     const token = coreExports.getInput('github-token', { required: true });
 
-    const octokit = githubExports.getOctokit(token);
-    const tree = await createTree(octokit, owner, repo, parent, files);
-    await createCommit(octokit, owner, repo, parent, tree, message);
+    const repo = new Repository(
+        githubExports.getOctokit(token),
+        coreExports.getInput('repository', { required: true }),
+    );
+
+    const tree = await repo.createTree(parent, files);
+    await repo.createCommit(parent, tree, message);
 } catch (error) {
     coreExports.setFailed(`${error?.message ?? error}`);
 }
