@@ -80,7 +80,7 @@ jobs:
 
       - run: test -e testdir/test-file.txt
       - run: test ! -x testdir/test-file.txt
-      - run: test "$(cat test-symlink)" = "$(cat testdir/test-file.txt)"
+      - run: diff test-symlink testdir/test-file.txt
       - run: test -x testdir/test-executable
 
       - run: test "$(readlink test-symlink)" = "testdir/test-file.txt"
