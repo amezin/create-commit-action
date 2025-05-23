@@ -7,6 +7,10 @@ on:
     branches:
       - main
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   dist-check:
     runs-on: ubuntu-latest
@@ -22,7 +26,14 @@ jobs:
       - run: git diff --exit-code --color --ignore-space-at-eol --text dist/
 
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on:
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.runs-on }}
     needs: dist-check
     if: github.event.pull_request.head.repo.node_id == github.event.pull_request.base.repo.node_id
     permissions:
