@@ -31232,14 +31232,6 @@ function requireGithub () {
 
 var githubExports = requireGithub();
 
-function readOnlyProperties(properties) {
-    return Object.fromEntries(
-        Object.entries(properties).map(
-            ([name, value]) => [name, { value }]
-        )
-    );
-}
-
 class Repository {
     constructor(octokit, repository) {
         const [owner, repo, ...extra] = repository.split('/');
@@ -31250,19 +31242,20 @@ class Repository {
             )
         }
 
-        Object.defineProperties(this, readOnlyProperties({
+        Object.assign(this, {
             octokit,
             owner,
             repo,
-        }));
+        });
     }
 
-    async createBlob(buffer, encoding = 'base64') {
+    async createBlob(content, encoding = 'base64') {
         const { octokit, owner, repo } = this;
+
         const { data } = await octokit.rest.git.createBlob({
             owner,
             repo,
-            content: buffer.toString(encoding),
+            content,
             encoding,
         });
 
@@ -31273,43 +31266,8 @@ class Repository {
         return sha;
     }
 
-    async createFile(path) {
-        const type = 'blob';
-
-        const stat = fs.lstatSync(path);
-
-        if (stat.isSymbolicLink()) {
-            return {
-                path,
-                type,
-                mode: '120000',
-                content: fs.readlinkSync(path),
-            }
-        }
-
-        const mode = (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644';
-        const buffer = fs.readFileSync(path);
-
-        if (isUtf8(buffer)) {
-            return {
-                path,
-                type,
-                mode,
-                content: buffer.toString('utf-8'),
-            };
-        }
-
-        return {
-            path,
-            type,
-            mode,
-            sha: await this.createBlob(buffer),
-        };
-    }
-
-    async createTree(parent, files) {
+    async createTree(parent, tree) {
         const { octokit, owner, repo } = this;
-        const tree = await Readable.from(files).map(path => this.createFile(path)).toArray();
 
         const { data } = await octokit.rest.git.createTree({
             owner,
@@ -31332,6 +31290,7 @@ class Repository {
 
     async createCommit(parent, tree, message) {
         const { octokit, owner, repo } = this;
+
         const { data } = await octokit.rest.git.createCommit({
             owner,
             repo,
@@ -31350,6 +31309,51 @@ class Repository {
     }
 }
 
+function encode(buffer) {
+    const encoding = isUtf8(buffer) ? 'utf-8' : 'base64';
+
+    return {
+        content: buffer.toString(encoding),
+        encoding,
+    };
+}
+
+function readFile(path) {
+    const stat = fs.lstatSync(path);
+
+    if (stat.isSymbolicLink()) {
+        return {
+            path,
+            mode: '120000',
+            ...encode(fs.readlinkSync(path, { encoding: 'buffer' })),
+        };
+    } else {
+        return {
+            path,
+            mode: (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644',
+            ...encode(fs.readFileSync(path)),
+        };
+    }
+}
+
+async function uploadBlob(blob, repo) {
+    const { content, encoding, ...properties } = blob;
+
+    if (encoding === 'utf-8') {
+        return {
+            content,
+            ...properties,
+        };
+    }
+
+    const sha = await repo.createBlob(content, encoding);
+
+    return {
+        sha,
+        ...properties,
+    };
+}
+
 try {
     const parent = coreExports.getInput('parent', { required: true });
     const files = coreExports.getMultilineInput('files', { required: true });
@@ -31361,7 +31365,10 @@ try {
         coreExports.getInput('repository', { required: true }),
     );
 
-    const tree = await repo.createTree(parent, files);
+    const blobs = files.map(readFile);
+    const entries = await Readable.from(blobs).map(blob => uploadBlob(blob, repo)).toArray();
+    const tree = await repo.createTree(parent, entries);
+
     await repo.createCommit(parent, tree, message);
 } catch (error) {
     coreExports.setFailed(`${error?.message ?? error}`);
