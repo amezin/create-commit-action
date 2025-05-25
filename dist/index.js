@@ -1,6 +1,7 @@
 import { isUtf8 } from 'node:buffer';
 import * as fs from 'node:fs';
 import require$$0$7, { Readable } from 'node:stream';
+import require$$1$2, { inspect } from 'node:util';
 import require$$0 from 'os';
 import require$$0$1 from 'crypto';
 import require$$1 from 'fs';
@@ -16,7 +17,6 @@ import require$$0$5 from 'stream';
 import require$$7 from 'buffer';
 import require$$8 from 'querystring';
 import require$$14 from 'stream/web';
-import require$$1$2 from 'node:util';
 import require$$0$6 from 'node:events';
 import require$$0$8 from 'worker_threads';
 import require$$2$2 from 'perf_hooks';
@@ -31372,4 +31372,5 @@ try {
     await repo.createCommit(parent, tree, message);
 } catch (error) {
     coreExports.setFailed(`${error?.message ?? error}`);
+    coreExports.debug(inspect(error));
 }

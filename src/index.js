@@ -1,6 +1,7 @@
 import { isUtf8 } from 'node:buffer';
 import * as fs from 'node:fs';
 import { Readable } from 'node:stream';
+import { inspect } from 'node:util';
 
 import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';
@@ -145,4 +146,5 @@ try {
     await repo.createCommit(parent, tree, message);
 } catch (error) {
     core.setFailed(`${error?.message ?? error}`);
+    core.debug(inspect(error));
 }
