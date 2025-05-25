@@ -1,10 +1,12 @@
 const { isUtf8 } = require('node:buffer');
 const fs = require('node:fs');
+const { resolve, relative, sep } = require('node:path');
 const { Readable } = require('node:stream');
 const { inspect } = require('node:util');
 
 const core = require('@actions/core');
 const { getOctokit } = require('@actions/github');
+const glob = require('@actions/glob');
 const { requestLog } = require('@octokit/plugin-request-log');
 
 class Repository {
@@ -103,6 +105,12 @@ function readFile(path) {
     }
 }
 
+function makeRelative(toplevel, entry) {
+    const { path, ...properties } = entry;
+
+    return { path: relative(toplevel, path).replaceAll(sep, '/'), ...properties };
+}
+
 async function uploadBlob(blob, repo) {
     const { content, encoding, ...properties } = blob;
 
@@ -127,15 +135,26 @@ async function run() {
         info: console.info.bind(console),
     };
 
-    const parent = core.getInput('parent', { required: true });
-    const files = core.getMultilineInput('files', { required: true });
-    const message = core.getInput('message', { required: true });
     const token = core.getInput('github-token', { required: true });
+    const parent = core.getInput('parent', { required: true });
+    const message = core.getInput('message', { required: true });
+    const toplevel = resolve(core.getInput('toplevel', { required: true }));
     const repository = core.getInput('repository', { required: true })
+
+    const globber = await glob.create(
+        core.getInput('files', { required: true }),
+        {
+            followSymbolicLinks: false,
+            implicitDescendants: true,
+            matchDirectories: false,
+        }
+    );
+
+    const files = await globber.glob();
+    const blobs = files.map(readFile).map(entry => makeRelative(toplevel, entry));
 
     const github = getOctokit(token, { log }, requestLog);
     const repo = new Repository(github, repository);
-    const blobs = files.map(readFile);
     const entries = await Readable.from(blobs).map(blob => uploadBlob(blob, repo)).toArray();
     const tree = await repo.createTree(parent, entries);
 

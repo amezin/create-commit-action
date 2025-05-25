@@ -11,7 +11,7 @@ inputs:
     required: true
 
   files:
-    description: Files to add/update. One path/name per line
+    description: Files to add/update. Supports wildcard patterns.
     required: true
 
   parent:
@@ -22,6 +22,11 @@ inputs:
   repository:
     description: Repository name with owner
     default: ${{ github.repository }}
+    required: true
+
+  toplevel:
+    description: Top-level directory of the repository
+    default: .
     required: true
 
   github-token:

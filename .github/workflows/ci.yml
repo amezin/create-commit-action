@@ -55,9 +55,8 @@ jobs:
         with:
           message: 'Auto-generated test commit'
           files: |
-            testdir/test-file.txt
+            testdir/*
             test-symlink
-            testdir/test-executable
             invalid-utf8
 
       - run: git fetch origin "$COMMIT"
