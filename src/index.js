@@ -5,6 +5,7 @@ import { inspect } from 'node:util';
 
 import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';
+import { requestLog } from '@octokit/plugin-request-log';
 
 class Repository {
     constructor(octokit, repository) {
@@ -33,11 +34,7 @@ class Repository {
             encoding,
         });
 
-        const { sha } = data;
-
-        core.info(`Created blob ${sha}`);
-
-        return sha;
+        return data.sha;
     }
 
     async createTree(parent, tree) {
@@ -54,10 +51,6 @@ class Repository {
 
         core.setOutput('tree_sha', sha);
         core.setOutput('tree_url', url);
-
-        core.startGroup(`Created tree ${sha}`);
-        core.info(JSON.stringify(data.tree, undefined, ' '));
-        core.endGroup();
 
         return sha;
     }
@@ -128,17 +121,20 @@ async function uploadBlob(blob, repo) {
     };
 }
 
+const log = {
+    debug: core.isDebug() ? console.debug.bind(console) : new Function(),
+    info: console.info.bind(console),
+};
+
 try {
     const parent = core.getInput('parent', { required: true });
     const files = core.getMultilineInput('files', { required: true });
     const message = core.getInput('message', { required: true });
     const token = core.getInput('github-token', { required: true });
+    const repository = core.getInput('repository', { required: true })
 
-    const repo = new Repository(
-        getOctokit(token),
-        core.getInput('repository', { required: true }),
-    );
-
+    const github = getOctokit(token, { log }, requestLog);
+    const repo = new Repository(github, repository);
     const blobs = files.map(readFile);
     const entries = await Readable.from(blobs).map(blob => uploadBlob(blob, repo)).toArray();
     const tree = await repo.createTree(parent, entries);

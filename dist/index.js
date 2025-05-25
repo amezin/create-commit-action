@@ -27627,9 +27627,9 @@ function requireBeforeAfterHook () {
 
 var beforeAfterHookExports = requireBeforeAfterHook();
 
-const VERSION$5 = "9.0.6";
+const VERSION$6 = "9.0.6";
 
-const userAgent = `octokit-endpoint.js/${VERSION$5} ${getUserAgent()}`;
+const userAgent = `octokit-endpoint.js/${VERSION$6} ${getUserAgent()}`;
 const DEFAULTS = {
   method: "GET",
   baseUrl: "https://api.github.com",
@@ -27958,7 +27958,7 @@ function withDefaults$2(oldDefaults, newDefaults) {
 
 const endpoint = withDefaults$2(null, DEFAULTS);
 
-const VERSION$4 = "8.4.1";
+const VERSION$5 = "8.4.1";
 
 function isPlainObject(value) {
   if (typeof value !== "object" || value === null)
@@ -28301,14 +28301,14 @@ function withDefaults$1(oldEndpoint, newDefaults) {
 
 const request = withDefaults$1(endpoint, {
   headers: {
-    "user-agent": `octokit-request.js/${VERSION$4} ${getUserAgent()}`
+    "user-agent": `octokit-request.js/${VERSION$5} ${getUserAgent()}`
   }
 });
 
 // pkg/dist-src/index.js
 
 // pkg/dist-src/version.js
-var VERSION$3 = "7.1.1";
+var VERSION$4 = "7.1.1";
 
 // pkg/dist-src/error.js
 function _buildMessageForResponseErrors(data) {
@@ -28407,7 +28407,7 @@ function withDefaults(request2, newDefaults) {
 // pkg/dist-src/index.js
 withDefaults(request, {
   headers: {
-    "user-agent": `octokit-graphql.js/${VERSION$3} ${getUserAgent()}`
+    "user-agent": `octokit-graphql.js/${VERSION$4} ${getUserAgent()}`
   },
   method: "POST",
   url: "/graphql"
@@ -28468,17 +28468,17 @@ const createTokenAuth = function createTokenAuth2(token) {
 // pkg/dist-src/index.js
 
 // pkg/dist-src/version.js
-var VERSION$2 = "5.2.1";
+var VERSION$3 = "5.2.1";
 
 // pkg/dist-src/index.js
 var noop = () => {
 };
 var consoleWarn = console.warn.bind(console);
 var consoleError = console.error.bind(console);
-var userAgentTrail = `octokit-core.js/${VERSION$2} ${getUserAgent()}`;
+var userAgentTrail = `octokit-core.js/${VERSION$3} ${getUserAgent()}`;
 var Octokit = class {
   static {
-    this.VERSION = VERSION$2;
+    this.VERSION = VERSION$3;
   }
   static defaults(defaults) {
     const OctokitWithDefaults = class extends this {
@@ -28603,7 +28603,7 @@ var distWeb$1 = /*#__PURE__*/Object.freeze({
 
 var require$$2 = /*@__PURE__*/getAugmentedNamespace(distWeb$1);
 
-const VERSION$1 = "10.4.1";
+const VERSION$2 = "10.4.1";
 
 const Endpoints = {
   actions: {
@@ -30723,7 +30723,7 @@ function restEndpointMethods(octokit) {
     rest: api
   };
 }
-restEndpointMethods.VERSION = VERSION$1;
+restEndpointMethods.VERSION = VERSION$2;
 function legacyRestEndpointMethods(octokit) {
   const api = endpointsToMethods(octokit);
   return {
@@ -30731,7 +30731,7 @@ function legacyRestEndpointMethods(octokit) {
     rest: api
   };
 }
-legacyRestEndpointMethods.VERSION = VERSION$1;
+legacyRestEndpointMethods.VERSION = VERSION$2;
 
 var distSrc = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -30742,7 +30742,7 @@ var distSrc = /*#__PURE__*/Object.freeze({
 var require$$3 = /*@__PURE__*/getAugmentedNamespace(distSrc);
 
 // pkg/dist-src/version.js
-var VERSION = "9.2.2";
+var VERSION$1 = "9.2.2";
 
 // pkg/dist-src/normalize-paginated-list-response.js
 function normalizePaginatedListResponse(response) {
@@ -31102,7 +31102,7 @@ function paginateRest(octokit) {
     })
   };
 }
-paginateRest.VERSION = VERSION;
+paginateRest.VERSION = VERSION$1;
 
 var distWeb = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -31232,6 +31232,31 @@ function requireGithub () {
 
 var githubExports = requireGithub();
 
+const VERSION = "6.0.0";
+
+function requestLog(octokit) {
+  octokit.hook.wrap("request", (request, options) => {
+    octokit.log.debug("request", options);
+    const start = Date.now();
+    const requestOptions = octokit.request.endpoint.parse(options);
+    const path = requestOptions.url.replace(options.baseUrl, "");
+    return request(options).then((response) => {
+      const requestId = response.headers["x-github-request-id"];
+      octokit.log.info(
+        `${requestOptions.method} ${path} - ${response.status} with id ${requestId} in ${Date.now() - start}ms`
+      );
+      return response;
+    }).catch((error) => {
+      const requestId = error.response?.headers["x-github-request-id"] || "UNKNOWN";
+      octokit.log.error(
+        `${requestOptions.method} ${path} - ${error.status} with id ${requestId} in ${Date.now() - start}ms`
+      );
+      throw error;
+    });
+  });
+}
+requestLog.VERSION = VERSION;
+
 class Repository {
     constructor(octokit, repository) {
         const [owner, repo, ...extra] = repository.split('/');
@@ -31259,11 +31284,7 @@ class Repository {
             encoding,
         });
 
-        const { sha } = data;
-
-        coreExports.info(`Created blob ${sha}`);
-
-        return sha;
+        return data.sha;
     }
 
     async createTree(parent, tree) {
@@ -31280,10 +31301,6 @@ class Repository {
 
         coreExports.setOutput('tree_sha', sha);
         coreExports.setOutput('tree_url', url);
-
-        coreExports.startGroup(`Created tree ${sha}`);
-        coreExports.info(JSON.stringify(data.tree, undefined, ' '));
-        coreExports.endGroup();
 
         return sha;
     }
@@ -31354,17 +31371,20 @@ async function uploadBlob(blob, repo) {
     };
 }
 
+const log = {
+    debug: coreExports.isDebug() ? console.debug.bind(console) : new Function(),
+    info: console.info.bind(console),
+};
+
 try {
     const parent = coreExports.getInput('parent', { required: true });
     const files = coreExports.getMultilineInput('files', { required: true });
     const message = coreExports.getInput('message', { required: true });
     const token = coreExports.getInput('github-token', { required: true });
+    const repository = coreExports.getInput('repository', { required: true });
 
-    const repo = new Repository(
-        githubExports.getOctokit(token),
-        coreExports.getInput('repository', { required: true }),
-    );
-
+    const github = githubExports.getOctokit(token, { log }, requestLog);
+    const repo = new Repository(github, repository);
     const blobs = files.map(readFile);
     const entries = await Readable.from(blobs).map(blob => uploadBlob(blob, repo)).toArray();
     const tree = await repo.createTree(parent, entries);
