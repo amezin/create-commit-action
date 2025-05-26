@@ -41,6 +41,7 @@ jobs:
       contents: write
 
     steps:
+      - run: git config --global core.autocrlf input
       - uses: actions/checkout@v4
 
       - run: mkdir testdir
