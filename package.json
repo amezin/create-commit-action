@@ -12,7 +12,7 @@
     "url": "git+https://github.com/amezin/create-commit-action.git"
   },
   "license": "MIT",
-  "type": "module",
+  "type": "commonjs",
   "engines": {
     "node": ">=20"
   },
@@ -27,6 +27,6 @@
     "rollup": "^4.41.0"
   },
   "scripts": {
-    "package": "rollup --config rollup.config.js"
+    "package": "rollup --config rollup.config.mjs"
   }
 }

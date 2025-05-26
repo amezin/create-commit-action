@@ -1,34 +1,36 @@
-import { isUtf8 } from 'node:buffer';
-import * as fs from 'node:fs';
-import require$$0$7, { Readable } from 'node:stream';
-import require$$1$2, { inspect } from 'node:util';
-import require$$0 from 'os';
-import require$$0$1 from 'crypto';
-import require$$1 from 'fs';
-import require$$1$5 from 'path';
-import require$$2$1 from 'http';
-import require$$3$1 from 'https';
-import require$$0$4 from 'net';
-import require$$1$1 from 'tls';
-import require$$4$1 from 'events';
-import require$$0$3 from 'assert';
-import require$$0$2 from 'util';
-import require$$0$5 from 'stream';
-import require$$7 from 'buffer';
-import require$$8 from 'querystring';
-import require$$14 from 'stream/web';
-import require$$0$6 from 'node:events';
-import require$$0$8 from 'worker_threads';
-import require$$2$2 from 'perf_hooks';
-import require$$5 from 'util/types';
-import require$$4$2 from 'async_hooks';
-import require$$1$3 from 'console';
-import require$$1$4 from 'url';
-import require$$3$2 from 'zlib';
-import require$$6 from 'string_decoder';
-import require$$0$9 from 'diagnostics_channel';
-import require$$2$3 from 'child_process';
-import require$$6$1 from 'timers';
+'use strict';
+
+var require$$0$a = require('node:buffer');
+var require$$1$6 = require('node:fs');
+var require$$0$7 = require('node:stream');
+var require$$1$2 = require('node:util');
+var require$$0 = require('os');
+var require$$0$1 = require('crypto');
+var require$$1 = require('fs');
+var require$$1$5 = require('path');
+var require$$2$1 = require('http');
+var require$$3$1 = require('https');
+var require$$0$4 = require('net');
+var require$$1$1 = require('tls');
+var require$$4$1 = require('events');
+var require$$0$3 = require('assert');
+var require$$0$2 = require('util');
+var require$$0$5 = require('stream');
+var require$$7 = require('buffer');
+var require$$8 = require('querystring');
+var require$$14 = require('stream/web');
+var require$$0$6 = require('node:events');
+var require$$0$8 = require('worker_threads');
+var require$$2$2 = require('perf_hooks');
+var require$$5 = require('util/types');
+var require$$4$2 = require('async_hooks');
+var require$$1$3 = require('console');
+var require$$1$4 = require('url');
+var require$$3$2 = require('zlib');
+var require$$6$1 = require('string_decoder');
+var require$$0$9 = require('diagnostics_channel');
+var require$$2$3 = require('child_process');
+var require$$6$2 = require('timers');
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -60,6 +62,8 @@ function getAugmentedNamespace(n) {
 	});
 	return a;
 }
+
+var src = {};
 
 var core = {};
 
@@ -19609,7 +19613,7 @@ function requireUtil$3 () {
 	const { DOMException } = requireConstants$3();
 	const { serializeAMimeType, parseMIMEType } = requireDataURL();
 	const { types } = require$$0$2;
-	const { StringDecoder } = require$$6;
+	const { StringDecoder } = require$$6$1;
 	const { btoa } = require$$7;
 
 	/** @type {PropertyDescriptor} */
@@ -26125,7 +26129,7 @@ function requireToolrunner () {
 	const path = __importStar(require$$1$5);
 	const io = __importStar(requireIo());
 	const ioUtil = __importStar(requireIoUtil());
-	const timers_1 = require$$6$1;
+	const timers_1 = require$$6$2;
 	/* eslint-disable @typescript-eslint/unbound-method */
 	const IS_WINDOWS = process.platform === 'win32';
 	/*
@@ -26744,7 +26748,7 @@ function requireExec () {
 	};
 	Object.defineProperty(exec, "__esModule", { value: true });
 	exec.getExecOutput = exec.exec = void 0;
-	const string_decoder_1 = require$$6;
+	const string_decoder_1 = require$$6$1;
 	const tr = __importStar(requireToolrunner());
 	/**
 	 * Exec a command.
@@ -27274,8 +27278,6 @@ function requireCore () {
 	} (core));
 	return core;
 }
-
-var coreExports = requireCore();
 
 var github = {};
 
@@ -30733,13 +30735,13 @@ function legacyRestEndpointMethods(octokit) {
 }
 legacyRestEndpointMethods.VERSION = VERSION$2;
 
-var distSrc = /*#__PURE__*/Object.freeze({
+var distSrc$1 = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	legacyRestEndpointMethods: legacyRestEndpointMethods,
 	restEndpointMethods: restEndpointMethods
 });
 
-var require$$3 = /*@__PURE__*/getAugmentedNamespace(distSrc);
+var require$$3 = /*@__PURE__*/getAugmentedNamespace(distSrc$1);
 
 // pkg/dist-src/version.js
 var VERSION$1 = "9.2.2";
@@ -31230,8 +31232,6 @@ function requireGithub () {
 	return github;
 }
 
-var githubExports = requireGithub();
-
 const VERSION = "6.0.0";
 
 function requestLog(octokit) {
@@ -31257,140 +31257,176 @@ function requestLog(octokit) {
 }
 requestLog.VERSION = VERSION;
 
-class Repository {
-    constructor(octokit, repository) {
-        const [owner, repo, ...extra] = repository.split('/');
+var distSrc = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	requestLog: requestLog
+});
 
-        if (!owner || !repo || extra.length) {
-            throw new Error(
-              `Invalid repository '${repository}'. Expected format {owner}/{repo}.`
-            )
-        }
+var require$$6 = /*@__PURE__*/getAugmentedNamespace(distSrc);
 
-        Object.assign(this, {
-            octokit,
-            owner,
-            repo,
-        });
-    }
+var hasRequiredSrc;
 
-    async createBlob(content, encoding = 'base64') {
-        const { octokit, owner, repo } = this;
+function requireSrc () {
+	if (hasRequiredSrc) return src;
+	hasRequiredSrc = 1;
+	const { isUtf8 } = require$$0$a;
+	const fs = require$$1$6;
+	const { Readable } = require$$0$7;
+	const { inspect } = require$$1$2;
 
-        const { data } = await octokit.rest.git.createBlob({
-            owner,
-            repo,
-            content,
-            encoding,
-        });
+	const core = requireCore();
+	const { getOctokit } = requireGithub();
+	const { requestLog } = require$$6;
 
-        return data.sha;
-    }
+	class Repository {
+	    constructor(octokit, repository) {
+	        const [owner, repo, ...extra] = repository.split('/');
 
-    async createTree(parent, tree) {
-        const { octokit, owner, repo } = this;
+	        if (!owner || !repo || extra.length) {
+	            throw new Error(
+	              `Invalid repository '${repository}'. Expected format {owner}/{repo}.`
+	            )
+	        }
 
-        const { data } = await octokit.rest.git.createTree({
-            owner,
-            repo,
-            base_tree: parent,
-            tree,
-        });
+	        Object.assign(this, {
+	            octokit,
+	            owner,
+	            repo,
+	        });
+	    }
 
-        const { sha, url } = data;
+	    async createBlob(content, encoding = 'base64') {
+	        const { octokit, owner, repo } = this;
 
-        coreExports.setOutput('tree_sha', sha);
-        coreExports.setOutput('tree_url', url);
+	        const { data } = await octokit.rest.git.createBlob({
+	            owner,
+	            repo,
+	            content,
+	            encoding,
+	        });
 
-        return sha;
-    }
+	        return data.sha;
+	    }
 
-    async createCommit(parent, tree, message) {
-        const { octokit, owner, repo } = this;
+	    async createTree(parent, tree) {
+	        const { octokit, owner, repo } = this;
 
-        const { data } = await octokit.rest.git.createCommit({
-            owner,
-            repo,
-            parents: [parent],
-            tree,
-            message,
-        });
+	        const { data } = await octokit.rest.git.createTree({
+	            owner,
+	            repo,
+	            base_tree: parent,
+	            tree,
+	        });
 
-        const { sha, url, html_url } = data;
+	        const { sha, url } = data;
 
-        coreExports.setOutput('sha', sha);
-        coreExports.setOutput('url', url);
-        coreExports.setOutput('html_url', html_url);
+	        core.setOutput('tree_sha', sha);
+	        core.setOutput('tree_url', url);
 
-        coreExports.info(`Created commit ${html_url}`);
-    }
+	        return sha;
+	    }
+
+	    async createCommit(parent, tree, message) {
+	        const { octokit, owner, repo } = this;
+
+	        const { data } = await octokit.rest.git.createCommit({
+	            owner,
+	            repo,
+	            parents: [parent],
+	            tree,
+	            message,
+	        });
+
+	        const { sha, url, html_url } = data;
+
+	        core.setOutput('sha', sha);
+	        core.setOutput('url', url);
+	        core.setOutput('html_url', html_url);
+
+	        core.info(`Created commit ${html_url}`);
+	    }
+	}
+
+	function encode(buffer) {
+	    const encoding = isUtf8(buffer) ? 'utf-8' : 'base64';
+
+	    return {
+	        content: buffer.toString(encoding),
+	        encoding,
+	    };
+	}
+
+	function readFile(path) {
+	    const stat = fs.lstatSync(path);
+
+	    if (stat.isSymbolicLink()) {
+	        return {
+	            path,
+	            mode: '120000',
+	            ...encode(fs.readlinkSync(path, { encoding: 'buffer' })),
+	        };
+	    } else {
+	        return {
+	            path,
+	            mode: (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644',
+	            ...encode(fs.readFileSync(path)),
+	        };
+	    }
+	}
+
+	async function uploadBlob(blob, repo) {
+	    const { content, encoding, ...properties } = blob;
+
+	    if (encoding === 'utf-8') {
+	        return {
+	            content,
+	            ...properties,
+	        };
+	    }
+
+	    const sha = await repo.createBlob(content, encoding);
+
+	    return {
+	        sha,
+	        ...properties,
+	    };
+	}
+
+	async function run() {
+	    const log = {
+	        debug: core.isDebug() ? console.debug.bind(console) : new Function(),
+	        info: console.info.bind(console),
+	    };
+
+	    const parent = core.getInput('parent', { required: true });
+	    const files = core.getMultilineInput('files', { required: true });
+	    const message = core.getInput('message', { required: true });
+	    const token = core.getInput('github-token', { required: true });
+	    const repository = core.getInput('repository', { required: true });
+
+	    const github = getOctokit(token, { log }, requestLog);
+	    const repo = new Repository(github, repository);
+	    const blobs = files.map(readFile);
+	    const entries = await Readable.from(blobs).map(blob => uploadBlob(blob, repo)).toArray();
+	    const tree = await repo.createTree(parent, entries);
+
+	    await repo.createCommit(parent, tree, message);
+	}
+
+	async function runWithErrorHandling() {
+	    try {
+	        await run();
+	    } catch (error) {
+	        core.setFailed(`${error?.message ?? error}`);
+	        core.debug(inspect(error));
+	    }
+	}
+
+	runWithErrorHandling();
+	return src;
 }
 
-function encode(buffer) {
-    const encoding = isUtf8(buffer) ? 'utf-8' : 'base64';
+var srcExports = requireSrc();
+var index = /*@__PURE__*/getDefaultExportFromCjs(srcExports);
 
-    return {
-        content: buffer.toString(encoding),
-        encoding,
-    };
-}
-
-function readFile(path) {
-    const stat = fs.lstatSync(path);
-
-    if (stat.isSymbolicLink()) {
-        return {
-            path,
-            mode: '120000',
-            ...encode(fs.readlinkSync(path, { encoding: 'buffer' })),
-        };
-    } else {
-        return {
-            path,
-            mode: (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644',
-            ...encode(fs.readFileSync(path)),
-        };
-    }
-}
-
-async function uploadBlob(blob, repo) {
-    const { content, encoding, ...properties } = blob;
-
-    if (encoding === 'utf-8') {
-        return {
-            content,
-            ...properties,
-        };
-    }
-
-    const sha = await repo.createBlob(content, encoding);
-
-    return {
-        sha,
-        ...properties,
-    };
-}
-
-const log = {
-    debug: coreExports.isDebug() ? console.debug.bind(console) : new Function(),
-    info: console.info.bind(console),
-};
-
-try {
-    const parent = coreExports.getInput('parent', { required: true });
-    const files = coreExports.getMultilineInput('files', { required: true });
-    const message = coreExports.getInput('message', { required: true });
-    const token = coreExports.getInput('github-token', { required: true });
-    const repository = coreExports.getInput('repository', { required: true });
-
-    const github = githubExports.getOctokit(token, { log }, requestLog);
-    const repo = new Repository(github, repository);
-    const blobs = files.map(readFile);
-    const entries = await Readable.from(blobs).map(blob => uploadBlob(blob, repo)).toArray();
-    const tree = await repo.createTree(parent, entries);
-
-    await repo.createCommit(parent, tree, message);
-} catch (error) {
-    coreExports.setFailed(`${error?.message ?? error}`);
-    coreExports.debug(inspect(error));
-}
+module.exports = index;

@@ -1,11 +1,11 @@
-import { isUtf8 } from 'node:buffer';
-import * as fs from 'node:fs';
-import { Readable } from 'node:stream';
-import { inspect } from 'node:util';
+const { isUtf8 } = require('node:buffer');
+const fs = require('node:fs');
+const { Readable } = require('node:stream');
+const { inspect } = require('node:util');
 
-import * as core from '@actions/core';
-import { getOctokit } from '@actions/github';
-import { requestLog } from '@octokit/plugin-request-log';
+const core = require('@actions/core');
+const { getOctokit } = require('@actions/github');
+const { requestLog } = require('@octokit/plugin-request-log');
 
 class Repository {
     constructor(octokit, repository) {
@@ -121,12 +121,12 @@ async function uploadBlob(blob, repo) {
     };
 }
 
-const log = {
-    debug: core.isDebug() ? console.debug.bind(console) : new Function(),
-    info: console.info.bind(console),
-};
+async function run() {
+    const log = {
+        debug: core.isDebug() ? console.debug.bind(console) : new Function(),
+        info: console.info.bind(console),
+    };
 
-try {
     const parent = core.getInput('parent', { required: true });
     const files = core.getMultilineInput('files', { required: true });
     const message = core.getInput('message', { required: true });
@@ -140,7 +140,15 @@ try {
     const tree = await repo.createTree(parent, entries);
 
     await repo.createCommit(parent, tree, message);
-} catch (error) {
-    core.setFailed(`${error?.message ?? error}`);
-    core.debug(inspect(error));
 }
+
+async function runWithErrorHandling() {
+    try {
+        await run();
+    } catch (error) {
+        core.setFailed(`${error?.message ?? error}`);
+        core.debug(inspect(error));
+    }
+}
+
+runWithErrorHandling()
