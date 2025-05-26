@@ -88,4 +88,3 @@ jobs:
       - run: test "$(cat invalid-utf8)" = $'\xc3\x28'
 
       - run: test "$(readlink test-symlink)" = "testdir/test-file.txt"
-        if: runner.os != 'Windows'

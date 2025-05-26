@@ -88,19 +88,19 @@ function encode(buffer) {
 }
 
 function readFile(path) {
-    const stat = fs.lstatSync(path);
+    const { mode } = fs.lstatSync(path);
 
-    if (stat.isSymbolicLink()) {
+    if (mode & fs.constants.S_IFREG) {
         return {
             path,
-            mode: '120000',
-            ...encode(fs.readlinkSync(path, { encoding: 'buffer' })),
+            mode: (mode & fs.constants.S_IXUSR) ? '100755' : '100644',
+            ...encode(fs.readFileSync(path)),
         };
     } else {
         return {
             path,
-            mode: (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644',
-            ...encode(fs.readFileSync(path)),
+            mode: '120000',
+            ...encode(fs.readlinkSync(path, { encoding: 'buffer' })),
         };
     }
 }
