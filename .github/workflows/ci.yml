@@ -46,7 +46,7 @@ jobs:
       - run: mkdir testdir
       - run: date -u >testdir/test-file.txt
       - run: ln -s testdir/test-file.txt test-symlink
-      - run: echo '#!/bin/sh' >testdir/test-executable
+      - run: echo $'#!/bin/sh\necho Hello World' >testdir/test-executable
       - run: chmod a+x testdir/test-executable
       - run: echo -n $'\xc3\x28' >invalid-utf8
 
@@ -84,7 +84,7 @@ jobs:
       - run: test ! -x testdir/test-file.txt
       - run: diff test-symlink testdir/test-file.txt
       - run: test -x testdir/test-executable
-      - run: test "$(cat testdir/test-executable)" = '#!/bin/sh'
+      - run: test "$(cat testdir/test-executable)" = $'#!/bin/sh\necho Hello World'
       - run: test "$(cat invalid-utf8)" = $'\xc3\x28'
 
       - run: test "$(readlink test-symlink)" = "testdir/test-file.txt"
