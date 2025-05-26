@@ -111,10 +111,10 @@ function makeRelative(toplevel, entry) {
     return { path: relative(toplevel, path).replaceAll(sep, '/'), ...properties };
 }
 
-async function uploadBlob(blob, repo) {
+async function uploadBlob(blob, repo, max_inline_blob_size) {
     const { content, encoding, ...properties } = blob;
 
-    if (encoding === 'utf-8') {
+    if (encoding === 'utf-8' && content.length <= max_inline_blob_size) {
         return {
             content,
             ...properties,
@@ -129,6 +129,21 @@ async function uploadBlob(blob, repo) {
     };
 }
 
+function parseFileSize(value) {
+    const match = value.match(/^\s*(\d+)\s*([kKmM])?\s*$/);
+
+    if (!match) {
+        throw new Error(`Invalid size ${value}`);
+    }
+
+    return Number.parseInt(match[1], 10) * ({
+        'k': 1000,
+        'K': 1000,
+        'm': 1000000,
+        'M': 1000000,
+    }[match[2]] ?? 1);
+}
+
 async function run() {
     const log = {
         debug: core.isDebug() ? console.debug.bind(console) : new Function(),
@@ -140,6 +155,9 @@ async function run() {
     const message = core.getInput('message', { required: true });
     const toplevel = resolve(core.getInput('toplevel', { required: true }));
     const repository = core.getInput('repository', { required: true })
+
+    const max_inline_blob_size =
+        parseFileSize(core.getInput('max-inline-blob-size', { required: true }));
 
     const globber = await glob.create(
         core.getInput('files', { required: true }),
@@ -155,7 +173,11 @@ async function run() {
 
     const github = getOctokit(token, { log }, requestLog);
     const repo = new Repository(github, repository);
-    const entries = await Readable.from(blobs).map(blob => uploadBlob(blob, repo)).toArray();
+
+    const entries = await Readable.from(blobs).map(
+        blob => uploadBlob(blob, repo, max_inline_blob_size)
+    ).toArray();
+
     const tree = await repo.createTree(parent, entries);
 
     await repo.createCommit(parent, tree, message);

@@ -34,6 +34,14 @@ inputs:
     default: ${{ github.token }}
     required: true
 
+  max-inline-blob-size:
+    description: >-
+      Files larger than this (in encoded form) will be uploaded with separate
+      API requests. The size is specified in bytes, with optional K or M suffix.
+      Note: non-UTF-8 files are always uploaded in separate requests.
+    default: '1M'
+    required: true
+
 outputs:
   sha:
     description: SHA of the created commit

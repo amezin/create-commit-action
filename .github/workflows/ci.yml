@@ -59,6 +59,7 @@ jobs:
             testdir/*
             test-symlink
             invalid-utf8
+            dist/index.js
 
       - run: git fetch origin "$COMMIT"
         env:
@@ -87,6 +88,7 @@ jobs:
       - run: test -x testdir/test-executable
       - run: test "$(cat testdir/test-executable)" = $'#!/bin/sh\necho Hello World'
       - run: test "$(cat invalid-utf8)" = $'\xc3\x28'
+      - run: test -z "$(git show -- dist/index.js)"
 
       - run: test "$(readlink test-symlink)" = "testdir/test-file.txt"
         if: runner.os != 'Windows'
