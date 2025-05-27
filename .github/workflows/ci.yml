@@ -23,7 +23,15 @@ jobs:
 
       - run: npm ci
       - run: npm run build
-      - run: git diff --exit-code --color --ignore-space-at-eol --text dist/
+
+      - id: diff
+        run: git diff --exit-code --color --ignore-space-at-eol --text dist/
+
+      - if: ${{ always() && steps.diff.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
 
   test:
     strategy:
