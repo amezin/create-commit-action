@@ -6,6 +6,8 @@ module.exports = {
     output: {
         file: 'dist/index.js',
         format: 'cjs',
+        sourcemap: true,
+        sourcemapExcludeSources: true,
     },
     plugins: [commonjs(), nodeResolve({ preferBuiltins: true })],
 };
