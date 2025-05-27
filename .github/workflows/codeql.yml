@@ -24,7 +24,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - run: npm ci
 
     - uses: github/codeql-action/init@v3
       with:
