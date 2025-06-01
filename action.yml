@@ -1,9 +1,5 @@
 name: Create detached commit
-description: >-
-  Create a detached commit through GitHub API.
-  Later, a branch or tag can be created or updated to point to this commit.
-  Unlike GraphQL createCommitOnBranch(), this allows updating a pull request
-  without triggering unnecessary intermediate events/CI runs.
+description: Create a detached commit through GitHub API
 
 inputs:
   message:
