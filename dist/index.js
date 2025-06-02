@@ -32619,7 +32619,7 @@ async function run() {
     const log = {
         debug: core.isDebug()
             ? console.debug.bind(console)
-            : (...args) => { },
+            : (..._args) => { },
         info: console.info.bind(console),
         warn: console.warn.bind(console),
         error: console.error.bind(console),

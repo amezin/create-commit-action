@@ -37,7 +37,24 @@ jobs:
           name: dist
           path: dist/
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format && git diff --color --exit-code
+
   test:
+    needs:
+      - dist-check
+      - lint
+
     strategy:
       fail-fast: false
       matrix:
@@ -47,7 +64,6 @@ jobs:
           - macos-latest
 
     runs-on: ${{ matrix.runs-on }}
-    needs: dist-check
     if: github.event.pull_request.head.repo.node_id == github.event.pull_request.base.repo.node_id
     permissions:
       contents: write
