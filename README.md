@@ -9,7 +9,7 @@ Create a commit through GitHub API, completely without `git` CLI.
 - The commit can be created on top of any other commit - not just a branch head.
 
 - The commit won't belong to any branch. If necessary, other actions should be
-used to create or update the branch - https://github.com/amezin/create-or-update-git-ref-action.
+  used to create or update the branch - https://github.com/amezin/create-or-update-git-ref-action.
 
 ## Usage
 

@@ -25,6 +25,7 @@ jobs:
           node-version: 20.x
 
       - run: npm ci
+      - run: npm run format
       - run: npm run build
 
       - id: diff

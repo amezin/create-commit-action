@@ -1,32 +1,54 @@
-const { isUtf8 } = require('node:buffer');
-const fs = require('node:fs');
-const { resolve, relative, sep } = require('node:path');
-const { Readable } = require('node:stream');
-const { inspect } = require('node:util');
+import { isUtf8, type Buffer } from 'node:buffer';
+import * as fs from 'node:fs';
+import { resolve, relative, sep } from 'node:path';
+import { Readable } from 'node:stream';
+import { inspect } from 'node:util';
 
-const core = require('@actions/core');
-const { getOctokit } = require('@actions/github');
-const glob = require('@actions/glob');
-const { requestLog } = require('@octokit/plugin-request-log');
+import * as core from '@actions/core';
+import { getOctokit } from '@actions/github';
+import * as glob from '@actions/glob';
+import { requestLog } from '@octokit/plugin-request-log';
+
+type BlobEncoding = 'base64' | 'utf-8';
+
+type BlobContent = {
+    content: string;
+    encoding: BlobEncoding;
+};
+
+type BlobInline = {
+    content: string;
+};
+
+type BlobRef = {
+    sha: string;
+};
+
+type TreeEntry = {
+    path: string;
+    mode: '100755' | '100644' | '120000';
+};
 
 class Repository {
-    constructor(octokit, repository) {
-        const [owner, repo, ...extra] = repository.split('/')
+    private readonly octokit: ReturnType<typeof getOctokit>;
+    private readonly owner: string;
+    private readonly repo: string;
+
+    constructor(octokit: ReturnType<typeof getOctokit>, repository: string) {
+        const [owner, repo, ...extra] = repository.split('/');
 
         if (!owner || !repo || extra.length) {
             throw new Error(
-              `Invalid repository '${repository}'. Expected format {owner}/{repo}.`
-            )
+                `Invalid repository '${repository}'. Expected format {owner}/{repo}.`
+            );
         }
 
-        Object.assign(this, {
-            octokit,
-            owner,
-            repo,
-        });
+        this.octokit = octokit;
+        this.owner = owner;
+        this.repo = repo;
     }
 
-    async createBlob(content, encoding = 'base64') {
+    async createBlob(content: string, encoding: BlobEncoding = 'base64') {
         const { octokit, owner, repo } = this;
 
         const { data } = await octokit.rest.git.createBlob({
@@ -39,7 +61,10 @@ class Repository {
         return data.sha;
     }
 
-    async createTree(parent, tree) {
+    async createTree(
+        parent: string,
+        tree: Array<TreeEntry & (BlobRef | BlobInline)>
+    ) {
         const { octokit, owner, repo } = this;
 
         const { data } = await octokit.rest.git.createTree({
@@ -57,7 +82,7 @@ class Repository {
         return sha;
     }
 
-    async createCommit(parent, tree, message) {
+    async createCommit(parent: string, tree: string, message: string) {
         const { octokit, owner, repo } = this;
 
         const { data } = await octokit.rest.git.createCommit({
@@ -78,7 +103,7 @@ class Repository {
     }
 }
 
-function encode(buffer) {
+function encode(buffer: Buffer): BlobContent {
     const encoding = isUtf8(buffer) ? 'utf-8' : 'base64';
 
     return {
@@ -87,7 +112,7 @@ function encode(buffer) {
     };
 }
 
-function readFile(path) {
+function readFile(path: string): TreeEntry & BlobContent {
     const stat = fs.lstatSync(path);
 
     if (stat.isSymbolicLink()) {
@@ -99,22 +124,29 @@ function readFile(path) {
     } else {
         return {
             path,
-            mode: (stat.mode & fs.constants.S_IXUSR) ? '100755' : '100644',
+            mode: stat.mode & fs.constants.S_IXUSR ? '100755' : '100644',
             ...encode(fs.readFileSync(path)),
         };
     }
 }
 
-function makeRelative(toplevel, entry) {
+function makeRelative<Entry extends TreeEntry>(toplevel: string, entry: Entry) {
     const { path, ...properties } = entry;
 
-    return { path: relative(toplevel, path).replaceAll(sep, '/'), ...properties };
+    return {
+        path: relative(toplevel, path).replaceAll(sep, '/'),
+        ...properties,
+    };
 }
 
-async function uploadBlob(blob, repo, max_inline_blob_size) {
+async function uploadBlob<Blob extends BlobContent & TreeEntry>(
+    blob: Blob,
+    repo: Repository,
+    maxInlineBlobSize: number
+): Promise<TreeEntry & (BlobRef | BlobInline)> {
     const { content, encoding, ...properties } = blob;
 
-    if (encoding === 'utf-8' && content.length <= max_inline_blob_size) {
+    if (encoding === 'utf-8' && content.length <= maxInlineBlobSize) {
         return {
             content,
             ...properties,
@@ -129,35 +161,43 @@ async function uploadBlob(blob, repo, max_inline_blob_size) {
     };
 }
 
-function parseFileSize(value) {
+function parseFileSize(value: string): number {
     const match = value.match(/^\s*(\d+)\s*([kKmM])?\s*$/);
 
     if (!match) {
         throw new Error(`Invalid size ${value}`);
     }
 
-    return Number.parseInt(match[1], 10) * ({
-        'k': 1000,
-        'K': 1000,
-        'm': 1000000,
-        'M': 1000000,
-    }[match[2]] ?? 1);
+    return (
+        Number.parseInt(match[1], 10) *
+        ({
+            k: 1000,
+            K: 1000,
+            m: 1000000,
+            M: 1000000,
+        }[match[2]] ?? 1)
+    );
 }
 
 async function run() {
     const log = {
-        debug: core.isDebug() ? console.debug.bind(console) : new Function(),
+        debug: core.isDebug()
+            ? console.debug.bind(console)
+            : (...args: any[]) => {},
         info: console.info.bind(console),
+        warn: console.warn.bind(console),
+        error: console.error.bind(console),
     };
 
     const token = core.getInput('github-token', { required: true });
     const parent = core.getInput('parent', { required: true });
     const message = core.getInput('message', { required: true });
     const toplevel = resolve(core.getInput('toplevel', { required: true }));
-    const repository = core.getInput('repository', { required: true })
+    const repository = core.getInput('repository', { required: true });
 
-    const max_inline_blob_size =
-        parseFileSize(core.getInput('max-inline-blob-size', { required: true }));
+    const maxInlineBlobSize = parseFileSize(
+        core.getInput('max-inline-blob-size', { required: true })
+    );
 
     const globber = await glob.create(
         core.getInput('files', { required: true }),
@@ -169,14 +209,16 @@ async function run() {
     );
 
     const files = await globber.glob();
-    const blobs = files.map(readFile).map(entry => makeRelative(toplevel, entry));
+    const blobs = files
+        .map(readFile)
+        .map(entry => makeRelative(toplevel, entry));
 
     const github = getOctokit(token, { log }, requestLog);
     const repo = new Repository(github, repository);
 
-    const entries = await Readable.from(blobs).map(
-        blob => uploadBlob(blob, repo, max_inline_blob_size)
-    ).toArray();
+    const entries = await Readable.from(blobs)
+        .map(blob => uploadBlob(blob, repo, maxInlineBlobSize))
+        .toArray();
 
     const tree = await repo.createTree(parent, entries);
 
@@ -187,9 +229,14 @@ async function runWithErrorHandling() {
     try {
         await run();
     } catch (error) {
-        core.setFailed(`${error?.message ?? error}`);
+        if (error instanceof Error) {
+            core.setFailed(error.message);
+        } else {
+            core.setFailed(`${error}`);
+        }
+
         core.debug(inspect(error));
     }
 }
 
-runWithErrorHandling()
+runWithErrorHandling();
