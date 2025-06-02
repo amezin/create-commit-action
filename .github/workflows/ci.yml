@@ -1,11 +1,13 @@
 name: ci
 
 on:
-  pull_request:
   workflow_dispatch:
+  pull_request:
   push:
     branches:
       - main
+  schedule:
+    - cron: '38 22 * * *'
 
 defaults:
   run:
@@ -49,6 +51,31 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run format && git diff --color --exit-code
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      # required for all workflows
+      security-events: write
+
+      # required to fetch internal or private CodeQL packs
+      packages: read
+
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript,actions
+          config: |
+            paths-ignore:
+              - dist
+
+      - uses: github/codeql-action/analyze@v3
 
   test:
     needs:
