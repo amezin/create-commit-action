@@ -24,3 +24,8 @@ updates:
         dependency-type: production
         update-types:
           - patch
+    ignore:
+      # Must match nodejs runtime version
+      - dependency-name: '@types/node'
+        update-types:
+          - version-update:semver-major
