@@ -139,8 +139,8 @@ function makeRelative<Entry extends TreeEntry>(toplevel: string, entry: Entry) {
     };
 }
 
-async function uploadBlob<Blob extends BlobContent & TreeEntry>(
-    blob: Blob,
+async function uploadBlob(
+    blob: BlobContent & TreeEntry,
     repo: Repository,
     maxInlineBlobSize: number
 ): Promise<TreeEntry & (BlobRef | BlobInline)> {
@@ -217,26 +217,20 @@ async function run() {
     const repo = new Repository(github, repository);
 
     const entries = await Readable.from(blobs)
-        .map(blob => uploadBlob(blob, repo, maxInlineBlobSize))
+        .map((blob: BlobContent & TreeEntry) =>
+            uploadBlob(blob, repo, maxInlineBlobSize)
+        )
         .toArray();
 
-    const tree = await repo.createTree(parent, entries);
+    const tree = await repo.createTree(
+        parent,
+        entries as (TreeEntry & (BlobRef | BlobInline))[]
+    );
 
     await repo.createCommit(parent, tree, message);
 }
 
-async function runWithErrorHandling() {
-    try {
-        await run();
-    } catch (error) {
-        if (error instanceof Error) {
-            core.setFailed(error.message);
-        } else {
-            core.setFailed(`${error}`);
-        }
-
-        core.debug(inspect(error));
-    }
-}
-
-runWithErrorHandling();
+run().catch((error: unknown) => {
+    core.setFailed(String(error));
+    core.debug(inspect(error));
+});

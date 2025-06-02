@@ -18,8 +18,15 @@ export default defineConfig([
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         languageOptions: { globals: globals.node },
     },
-    tseslint.configs.recommended,
-    {
+    tseslint.config({
+        files: ['**/*.{ts,mts,cts}'],
+        extends: [tseslint.configs.strictTypeChecked],
+        languageOptions: {
+            parserOptions: {
+                projectService: true,
+                tsconfigRootDir: import.meta.dirname,
+            },
+        },
         rules: {
             '@typescript-eslint/no-unused-vars': [
                 'error',
@@ -34,7 +41,7 @@ export default defineConfig([
                 },
             ],
         },
-    },
+    }),
     {
         files: ['**/*.json'],
         plugins: { json },

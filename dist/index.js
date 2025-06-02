@@ -32642,26 +32642,15 @@ async function run() {
     const github = (0, github_1.getOctokit)(token, { log }, plugin_request_log_1.requestLog);
     const repo = new Repository(github, repository);
     const entries = await node_stream_1.Readable.from(blobs)
-        .map(blob => uploadBlob(blob, repo, maxInlineBlobSize))
+        .map((blob) => uploadBlob(blob, repo, maxInlineBlobSize))
         .toArray();
     const tree = await repo.createTree(parent, entries);
     await repo.createCommit(parent, tree, message);
 }
-async function runWithErrorHandling() {
-    try {
-        await run();
-    }
-    catch (error) {
-        if (error instanceof Error) {
-            core.setFailed(error.message);
-        }
-        else {
-            core.setFailed(`${error}`);
-        }
-        core.debug((0, node_util_1.inspect)(error));
-    }
-}
-runWithErrorHandling();
+run().catch((error) => {
+    core.setFailed(String(error));
+    core.debug((0, node_util_1.inspect)(error));
+});
 
 
 /***/ }),
