@@ -13,14 +13,12 @@ export default defineConfig([
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         plugins: { js },
         extends: ['js/recommended'],
-    },
-    {
-        files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         languageOptions: { globals: globals.node },
     },
-    tseslint.config({
+    {
         files: ['**/*.{ts,mts,cts}'],
-        extends: [tseslint.configs.strictTypeChecked],
+        plugins: { tseslint },
+        extends: ['tseslint/recommendedTypeChecked'],
         languageOptions: {
             parserOptions: {
                 projectService: true,
@@ -31,17 +29,14 @@ export default defineConfig([
             '@typescript-eslint/no-unused-vars': [
                 'error',
                 {
-                    args: 'all',
                     argsIgnorePattern: '^_',
-                    caughtErrors: 'all',
                     caughtErrorsIgnorePattern: '^_',
                     destructuredArrayIgnorePattern: '^_',
                     varsIgnorePattern: '^_',
-                    ignoreRestSiblings: true,
                 },
             ],
         },
-    }),
+    },
     {
         files: ['**/*.json'],
         plugins: { json },
@@ -55,30 +50,21 @@ export default defineConfig([
         },
     },
     {
-        files: ['**/*.jsonc'],
-        plugins: { json },
-        language: 'json/jsonc',
-        extends: ['json/recommended'],
-    },
-    {
-        files: ['**/*.json5'],
-        plugins: { json },
-        language: 'json/json5',
-        extends: ['json/recommended'],
-    },
-    {
         files: ['**/*.md'],
         plugins: { markdown },
         language: 'markdown/gfm',
         extends: ['markdown/recommended'],
     },
-    yml.configs['flat/recommended'],
+    {
+        files: ['**/*.yaml', '**/*.yml'],
+        plugins: { yml },
+        extends: ['yml/flat/recommended', 'yml/flat/prettier'],
+    },
     {
         files: ['.github/workflows/*.{yml,yaml}'],
         rules: {
             'yml/no-empty-mapping-value': 'off',
         },
     },
-    yml.configs['flat/prettier'],
     prettierRecommended,
 ]);
