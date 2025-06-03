@@ -1,6 +1,10 @@
 name: Create detached commit
 description: Create a detached commit through GitHub API
 
+branding:
+  color: orange
+  icon: git-commit
+
 inputs:
   message:
     description: Commit message
