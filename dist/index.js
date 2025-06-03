@@ -32528,18 +32528,15 @@ class Repository {
         });
         return data.sha;
     }
-    async createTree(parent, tree) {
+    async createTree(base_tree, tree) {
         const { octokit, owner, repo } = this;
         const { data } = await octokit.rest.git.createTree({
             owner,
             repo,
-            base_tree: parent,
+            base_tree,
             tree,
         });
-        const { sha, url } = data;
-        core.setOutput('tree_sha', sha);
-        core.setOutput('tree_url', url);
-        return sha;
+        return data;
     }
     async createCommit(parent, tree, message) {
         const { octokit, owner, repo } = this;
@@ -32550,11 +32547,7 @@ class Repository {
             tree,
             message,
         });
-        const { sha, url, html_url } = data;
-        core.setOutput('sha', sha);
-        core.setOutput('url', url);
-        core.setOutput('html_url', html_url);
-        core.info(`Created commit ${html_url}`);
+        return data;
     }
 }
 function encode(buffer) {
@@ -32645,7 +32638,13 @@ async function run() {
         .map((blob) => uploadBlob(blob, repo, maxInlineBlobSize))
         .toArray();
     const tree = await repo.createTree(parent, entries);
-    await repo.createCommit(parent, tree, message);
+    core.setOutput('tree_sha', tree.sha);
+    core.setOutput('tree_url', tree.url);
+    const commit = await repo.createCommit(parent, tree.sha, message);
+    core.setOutput('sha', commit.sha);
+    core.setOutput('url', commit.url);
+    core.setOutput('html_url', commit.html_url);
+    core.info(`Created commit ${commit.html_url}`);
 }
 run().catch((error) => {
     core.setFailed(String(error));

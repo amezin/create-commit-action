@@ -62,7 +62,7 @@ class Repository {
     }
 
     async createTree(
-        parent: string,
+        base_tree: string,
         tree: Array<TreeEntry & (BlobRef | BlobInline)>
     ) {
         const { octokit, owner, repo } = this;
@@ -70,16 +70,11 @@ class Repository {
         const { data } = await octokit.rest.git.createTree({
             owner,
             repo,
-            base_tree: parent,
+            base_tree,
             tree,
         });
 
-        const { sha, url } = data;
-
-        core.setOutput('tree_sha', sha);
-        core.setOutput('tree_url', url);
-
-        return sha;
+        return data;
     }
 
     async createCommit(parent: string, tree: string, message: string) {
@@ -93,13 +88,7 @@ class Repository {
             message,
         });
 
-        const { sha, url, html_url } = data;
-
-        core.setOutput('sha', sha);
-        core.setOutput('url', url);
-        core.setOutput('html_url', html_url);
-
-        core.info(`Created commit ${html_url}`);
+        return data;
     }
 }
 
@@ -227,7 +216,16 @@ async function run() {
         entries as (TreeEntry & (BlobRef | BlobInline))[]
     );
 
-    await repo.createCommit(parent, tree, message);
+    core.setOutput('tree_sha', tree.sha);
+    core.setOutput('tree_url', tree.url);
+
+    const commit = await repo.createCommit(parent, tree.sha, message);
+
+    core.setOutput('sha', commit.sha);
+    core.setOutput('url', commit.url);
+    core.setOutput('html_url', commit.html_url);
+
+    core.info(`Created commit ${commit.html_url}`);
 }
 
 run().catch((error: unknown) => {
