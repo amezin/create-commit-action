@@ -3,11 +3,9 @@
   "extends": ["config:best-practices"],
   "packageRules": [
     {
-      "matchPackageNames": ["actions/node-versions", "@types/node"],
-      "allowedVersions": "/^20($|\\.)/"
+      "matchPackageNames": ["node", "@types/node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
-  ],
-  "constraints": {
-    "node": "20.x"
-  }
+  ]
 }

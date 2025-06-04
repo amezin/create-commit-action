@@ -11,9 +11,6 @@
     "url": "git+https://github.com/amezin/create-commit-action.git"
   },
   "license": "MIT",
-  "engines": {
-    "node": ">=20"
-  },
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.1",
