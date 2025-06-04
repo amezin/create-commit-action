@@ -1,12 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:best-practices",
-    "config:js-app",
-    "helpers:pinGitHubActionDigestsToSemver",
-    ":rebaseStalePrs"
-  ],
+  "extends": ["config:best-practices", "config:js-app", ":rebaseStalePrs"],
   "packageRules": [
+    {
+      "extends": ["helpers:pinGitHubActionDigests"],
+      "rangeStrategy": "pin",
+      "versioning": "semver-coerced"
+    },
     {
       "matchPackageNames": [
         "node",
@@ -15,10 +15,6 @@
       ],
       "matchUpdateTypes": ["major"],
       "enabled": false
-    },
-    {
-      "matchDepTypes": ["action"],
-      "rangeStrategy": "auto"
     }
   ],
   "minimumReleaseAge": "14 days"
