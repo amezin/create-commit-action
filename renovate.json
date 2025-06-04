@@ -3,7 +3,11 @@
   "extends": ["config:best-practices"],
   "packageRules": [
     {
-      "matchPackageNames": ["node", "@types/node"],
+      "matchPackageNames": [
+        "node",
+        "@types/node",
+        "@octokit/plugin-request-log"
+      ],
       "matchUpdateTypes": ["major"],
       "enabled": false
     }
