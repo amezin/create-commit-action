@@ -4,8 +4,7 @@
   "packageRules": [
     {
       "extends": ["helpers:pinGitHubActionDigests"],
-      "rangeStrategy": "pin",
-      "versioning": "semver-coerced"
+      "versioning": "npm"
     },
     {
       "matchPackageNames": [
