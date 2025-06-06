@@ -11,6 +11,20 @@ Create a commit through GitHub API, completely without `git` CLI.
 - The commit won't belong to any branch. If necessary, other actions should be
   used to create or update the branch - https://github.com/amezin/create-or-update-git-ref-action.
 
+## Usage example
+
+A workflow that generates a file and adds it to the `main` branch through a pull request:
+
+https://github.com/amezin/pull-request-generator/blob/main/.github/workflows/make-pull-request.yml
+
+## Currently unsupported
+
+- Deleting files
+
+- Conversion of line endings (should only matter on Windows)
+
+- Symlinks on Windows
+
 ## Inputs
 
 ### `message`
@@ -95,18 +109,6 @@ SHA of the created Git tree.
 ### `tree_url`
 
 API URL of the created Git tree.
-
-## Usage example
-
-https://github.com/amezin/pull-request-generator/blob/main/.github/workflows/make-pull-request.yml
-
-## Currently unsupported
-
-- Deleting files
-
-- Conversion of line endings (should only matter on Windows)
-
-- Symlinks on Windows
 
 ## Why not GraphQL [`createCommitOnBranch`]
 
