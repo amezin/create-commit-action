@@ -32640,10 +32640,12 @@ async function run() {
     const tree = await repo.createTree(parent, entries);
     core.setOutput('tree_sha', tree.sha);
     core.setOutput('tree_url', tree.url);
+    core.setOutput('tree', JSON.stringify(tree, undefined, ' '));
     const commit = await repo.createCommit(parent, tree.sha, message);
     core.setOutput('sha', commit.sha);
     core.setOutput('url', commit.url);
     core.setOutput('html_url', commit.html_url);
+    core.setOutput('commit', JSON.stringify(commit, undefined, ' '));
     core.info(`Created commit ${commit.html_url}`);
 }
 run().catch((error) => {

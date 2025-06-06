@@ -49,6 +49,10 @@ outputs:
     description: API URL of the created commit
   html_url:
     description: Browser URL of the created commit
+  commit:
+    description: Commit object as JSON
+  tree:
+    description: Tree object as JSON
   tree_sha:
     description: SHA of the created Git tree
   tree_url:

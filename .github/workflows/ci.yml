@@ -131,6 +131,59 @@ jobs:
             invalid-utf8
             dist/index.js
 
+      - run: test "$MESSAGE_FROM_JSON" = "Auto-generated test commit"
+        env:
+          MESSAGE_FROM_JSON: ${{ fromJSON(steps.test-commit.outputs.commit).message }}
+
+      - run: test "$PARENT_SHA" = "$GITHUB_SHA"
+        env:
+          PARENT_SHA: ${{ fromJSON(steps.test-commit.outputs.commit).parents[0].sha }}
+
+      - run: test "$COMMIT_URL_FROM_JSON" = "$COMMIT_URL_OUTPUT"
+        env:
+          COMMIT_URL_FROM_JSON: ${{ fromJSON(steps.test-commit.outputs.commit).url }}
+          COMMIT_URL_OUTPUT: ${{ steps.test-commit.outputs.url }}
+
+      - run: echo "$COMMIT_URL" | grep "$COMMIT_SHA"
+        env:
+          COMMIT_SHA: ${{ steps.test-commit.outputs.sha }}
+          COMMIT_URL: ${{ steps.test-commit.outputs.url }}
+
+      - run: test "$COMMIT_URL_FROM_JSON" = "$COMMIT_URL_OUTPUT"
+        env:
+          COMMIT_URL_FROM_JSON: ${{ fromJSON(steps.test-commit.outputs.commit).html_url }}
+          COMMIT_URL_OUTPUT: ${{ steps.test-commit.outputs.html_url }}
+
+      - run: echo "$COMMIT_URL" | grep "$COMMIT_SHA"
+        env:
+          COMMIT_SHA: ${{ steps.test-commit.outputs.sha }}
+          COMMIT_URL: ${{ steps.test-commit.outputs.html_url }}
+
+      - run: test "$TREE_URL_FROM_JSON" = "$TREE_URL_OUTPUT"
+        env:
+          TREE_URL_FROM_JSON: ${{ fromJSON(steps.test-commit.outputs.commit).tree.url }}
+          TREE_URL_OUTPUT: ${{ steps.test-commit.outputs.tree_url }}
+
+      - run: test "$TREE_URL_FROM_JSON" = "$TREE_URL_OUTPUT"
+        env:
+          TREE_URL_FROM_JSON: ${{ fromJSON(steps.test-commit.outputs.tree).url }}
+          TREE_URL_OUTPUT: ${{ steps.test-commit.outputs.tree_url }}
+
+      - run: test "$TREE_SHA_FROM_JSON" = "$TREE_SHA_OUTPUT"
+        env:
+          TREE_SHA_FROM_JSON: ${{ fromJSON(steps.test-commit.outputs.commit).tree.sha }}
+          TREE_SHA_OUTPUT: ${{ steps.test-commit.outputs.tree_sha }}
+
+      - run: test "$TREE_SHA_FROM_JSON" = "$TREE_SHA_OUTPUT"
+        env:
+          TREE_SHA_FROM_JSON: ${{ fromJSON(steps.test-commit.outputs.tree).sha }}
+          TREE_SHA_OUTPUT: ${{ steps.test-commit.outputs.tree_sha }}
+
+      - run: echo "$TREE_URL" | grep "$TREE_SHA"
+        env:
+          TREE_SHA: ${{ steps.test-commit.outputs.tree_sha }}
+          TREE_URL: ${{ steps.test-commit.outputs.tree_url }}
+
       - run: git fetch origin "$COMMIT"
         env:
           COMMIT: ${{ steps.test-commit.outputs.sha }}

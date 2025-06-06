@@ -102,6 +102,18 @@ API URL of the created commit.
 
 Browser URL of the created commit.
 
+### `commit`
+
+Commit object as JSON. Can be passed to [`fromJSON()`] function to extract the necessary data.
+
+See https://docs.github.com/en/rest/git/commits#get-a-commit-object
+
+### `tree`
+
+Tree object as JSON. Can be passed to [`fromJSON()`] function to extract the necessary data.
+
+See https://docs.github.com/en/rest/git/trees#get-a-tree
+
 ### `tree_sha`
 
 SHA of the created Git tree.
@@ -129,3 +141,4 @@ However, if the commit is initially detached, you can simply update
 pull request's head branch to point to the new commit.
 
 [`createCommitOnBranch`]: https://docs.github.com/en/graphql/reference/mutations#createcommitonbranch
+[`fromJSON()`]: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#fromjson
