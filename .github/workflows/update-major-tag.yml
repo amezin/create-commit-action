@@ -23,4 +23,3 @@ jobs:
       - uses: amezin/create-or-update-git-ref-action@d6e61b360347b82241fe5c7bcc2139beaaf35377 # v1.0.0
         with:
           ref: refs/tags/${{ steps.parse.outputs.major }}
-          force: true
