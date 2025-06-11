@@ -40,12 +40,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-
-    env:
-      FORCE_COLOR: 1
-
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -54,13 +48,7 @@ jobs:
           node-version-file: .nvmrc
 
       - run: npm ci
-      - run: npm run lint -- --format "$GITHUB_WORKSPACE/.github/eslint-multi-formatter.mjs" -o "$RUNNER_TEMP/eslint.sarif"
-      - uses: github/codeql-action/upload-sarif@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
-        if: always()
-        with:
-          sarif_file: ${{ runner.temp }}/eslint.sarif
-          category: eslint
-
+      - run: npm run lint
       - run: npm run format && git diff --color --exit-code
 
   codeql:
