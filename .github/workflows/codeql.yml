@@ -11,7 +11,7 @@ on:
 
 jobs:
   shared:
-    uses: amezin/js-actions-common/.github/workflows/shared-codeql.yml@v1.0.5
+    uses: amezin/js-actions-common/.github/workflows/shared-codeql.yml@c282d8b68b27a0ebd4667d0168c30be058a4d640 # v1.0.5
     permissions:
       contents: read
       security-events: write
