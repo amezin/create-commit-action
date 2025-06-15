@@ -60,20 +60,19 @@ Root/top-level directory of the repository.
 With `files: subdir/a.txt` and `toplevel: subdir`, `a.txt` will be added to
 the root directory of the repository.
 
-_Default_: the default working directory - `${{ github.workspace }}` or `$GITHUB_WORKSPACE`.
+**Default**: the default working directory - `${{ github.workspace }}` or `$GITHUB_WORKSPACE`.
 
 ### `parent`
 
 Parent commit SHA.
 
-_Default_: `${{ github.sha }}` - the commit that triggered the workflow.
+**Default**: `${{ github.sha }}` - the commit that triggered the workflow.
 
 ### `repository`
 
 The owner and repository name, in `owner/name` format.
 
-_Default_: `${{ github.repository }}` - the repository where the workflow was
-triggered.
+**Default**: `${{ github.repository }}` - the repository where the workflow was triggered.
 
 ### `github-token`
 
@@ -83,7 +82,7 @@ Must have `contents: write` permission.
 
 The application or user the token belongs to will become the author of the commit.
 
-_Default_: `${{ github.token }}`
+**Default**: `${{ github.token }}`
 
 > [!NOTE]
 > With the default token, `github-actions[bot]` will be the commit author.
