@@ -1,15 +1,11 @@
-name: 'Dependency Review'
-on: [pull_request_target]
+name: dependency-review
 
-permissions:
-  contents: read
-  pull-requests: write
+on:
+  - pull_request_target
 
 jobs:
-  dependency-review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/dependency-review-action@da24556b548a50705dd671f47852072ea4c105d9 # v4.7.1
-        with:
-          comment-summary-in-pr: always
-          allow-licenses: MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause
+  shared:
+    uses: amezin/js-actions-common/.github/workflows/shared-dependency-review.yml@v1.0.5
+    permissions:
+      contents: read
+      pull-requests: write

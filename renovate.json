@@ -1,20 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices", "config:js-app", ":rebaseStalePrs"],
-  "packageRules": [
-    {
-      "extends": ["helpers:pinGitHubActionDigests"],
-      "versioning": "npm"
-    },
-    {
-      "matchPackageNames": [
-        "node",
-        "@types/node",
-        "@octokit/plugin-request-log"
-      ],
-      "matchUpdateTypes": ["major"],
-      "enabled": false
-    }
-  ],
-  "minimumReleaseAge": "14 days"
+  "extends": ["github>amezin/js-actions-common#v1.0.5"]
 }

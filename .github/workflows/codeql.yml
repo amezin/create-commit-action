@@ -1,0 +1,17 @@
+name: codeql
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '24 18 * * *'
+
+jobs:
+  shared:
+    uses: amezin/js-actions-common/.github/workflows/shared-codeql.yml@v1.0.5
+    permissions:
+      contents: read
+      security-events: write

@@ -7,83 +7,21 @@ on:
     branches:
       - main
   schedule:
-    - cron: '38 22 * * *'
+    - cron: '24 18 * * *'
 
 defaults:
   run:
     shell: bash
 
-permissions:
-  contents: read
-
 jobs:
-  dist-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: .nvmrc
-
-      - run: npm ci
-      - run: npm run build
-
-      - id: diff
-        run: git diff --exit-code --color --ignore-space-at-eol --text dist/
-
-      - if: ${{ always() && steps.diff.outcome == 'failure' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: dist
-          path: dist/
-
-  lint:
-    runs-on: ubuntu-latest
+  shared:
+    uses: amezin/js-actions-common/.github/workflows/shared-ci.yml@v1.0.5
     permissions:
-      security-events: write
-
-    env:
-      FORCE_COLOR: 1
-
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: .nvmrc
-
-      - run: npm ci
-      - run: npm run lint -- --format "$GITHUB_WORKSPACE/.github/eslint-multi-formatter.mjs" -o "$RUNNER_TEMP/eslint.sarif"
-      - uses: github/codeql-action/upload-sarif@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
-        if: always()
-        with:
-          sarif_file: ${{ runner.temp }}/eslint.sarif
-          category: eslint
-
-      - run: npm run format && git diff --color --exit-code
-
-  codeql:
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - uses: github/codeql-action/init@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
-        with:
-          languages: javascript-typescript,actions
-          config: |
-            paths-ignore:
-              - dist
-
-      - uses: github/codeql-action/analyze@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
+      contents: read
 
   test:
     needs:
-      - dist-check
-      - lint
+      - shared
 
     strategy:
       fail-fast: false
