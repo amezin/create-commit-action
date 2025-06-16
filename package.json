@@ -18,7 +18,7 @@
     "@octokit/plugin-request-log": "4.0.1"
   },
   "devDependencies": {
-    "@amezin/eslint-config-js-actions": "1.0.5",
+    "@amezin/eslint-config-js-actions": "1.0.6",
     "@types/node": "20.17.57",
     "@vercel/ncc": "0.38.3",
     "typescript": "5.8.3"
