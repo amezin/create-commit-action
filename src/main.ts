@@ -5,9 +5,8 @@ import { Readable } from 'node:stream';
 import { inspect } from 'node:util';
 
 import * as core from '@actions/core';
-import { getOctokit } from '@actions/github';
+import { getOctokit } from '@amezin/js-actions-octokit';
 import * as glob from '@actions/glob';
-import { requestLog } from '@octokit/plugin-request-log';
 
 type BlobEncoding = 'base64' | 'utf-8';
 
@@ -169,15 +168,6 @@ function parseFileSize(value: string): number {
 }
 
 async function run() {
-    const log = {
-        debug: core.isDebug()
-            ? console.debug.bind(console)
-            : (..._args: unknown[]) => {},
-        info: console.info.bind(console),
-        warn: console.warn.bind(console),
-        error: console.error.bind(console),
-    };
-
     const token = core.getInput('github-token', { required: true });
     const parent = core.getInput('parent', { required: true });
     const message = core.getInput('message', { required: true });
@@ -202,7 +192,7 @@ async function run() {
         .map(readFile)
         .map(entry => makeRelative(toplevel, entry));
 
-    const github = getOctokit(token, { log }, requestLog);
+    const github = getOctokit(token);
     const repo = new Repository(github, repository);
 
     const entries = await Readable.from(blobs)
