@@ -1,7 +1,6 @@
 import { isUtf8, type Buffer } from 'node:buffer';
 import * as fs from 'node:fs';
 import { resolve, relative, sep } from 'node:path';
-import { Readable } from 'node:stream';
 import { inspect } from 'node:util';
 
 import * as core from '@actions/core';
@@ -195,16 +194,11 @@ async function run() {
     const github = getOctokit(token);
     const repo = new Repository(github, repository);
 
-    const entries = await Readable.from(blobs)
-        .map((blob: BlobContent & TreeEntry) =>
-            uploadBlob(blob, repo, maxInlineBlobSize)
-        )
-        .toArray();
-
-    const tree = await repo.createTree(
-        parent,
-        entries as (TreeEntry & (BlobRef | BlobInline))[]
+    const entries = await Promise.all(
+        blobs.map(blob => uploadBlob(blob, repo, maxInlineBlobSize))
     );
+
+    const tree = await repo.createTree(parent, entries);
 
     core.setOutput('tree_sha', tree.sha);
     core.setOutput('tree_url', tree.url);

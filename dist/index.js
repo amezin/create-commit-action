@@ -34472,7 +34472,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const node_buffer_1 = __nccwpck_require__(4573);
 const fs = __importStar(__nccwpck_require__(3024));
 const node_path_1 = __nccwpck_require__(6760);
-const node_stream_1 = __nccwpck_require__(7075);
 const node_util_1 = __nccwpck_require__(7975);
 const core = __importStar(__nccwpck_require__(7484));
 const js_actions_octokit_1 = __nccwpck_require__(309);
@@ -34595,9 +34594,7 @@ async function run() {
         .map(entry => makeRelative(toplevel, entry));
     const github = (0, js_actions_octokit_1.getOctokit)(token);
     const repo = new Repository(github, repository);
-    const entries = await node_stream_1.Readable.from(blobs)
-        .map((blob) => uploadBlob(blob, repo, maxInlineBlobSize))
-        .toArray();
+    const entries = await Promise.all(blobs.map(blob => uploadBlob(blob, repo, maxInlineBlobSize)));
     const tree = await repo.createTree(parent, entries);
     core.setOutput('tree_sha', tree.sha);
     core.setOutput('tree_url', tree.url);
