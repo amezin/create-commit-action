@@ -27,9 +27,13 @@ jobs:
       fail-fast: false
       matrix:
         runs-on:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - windows-2022
+          - windows-2025
+          - macos-13
+          - macos-14
+          - macos-15
 
     runs-on: ${{ matrix.runs-on }}
     if: github.event.pull_request.head.repo.node_id == github.event.pull_request.base.repo.node_id
