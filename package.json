@@ -17,10 +17,10 @@
   "dependencies": {
     "@actions/core": "2.0.2",
     "@actions/glob": "0.5.0",
-    "@amezin/js-actions-octokit": "2.0.2"
+    "@amezin/js-actions-octokit": "2.1.0"
   },
   "devDependencies": {
-    "@amezin/eslint-config-js-actions": "2.0.2",
+    "@amezin/eslint-config-js-actions": "2.1.0",
     "@types/node": "24.10.2",
     "@vercel/ncc": "0.38.4",
     "typescript": "5.9.3"
