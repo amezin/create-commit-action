@@ -4,8 +4,8 @@ import { resolve, relative, sep } from 'node:path';
 import { inspect } from 'node:util';
 
 import * as core from '@actions/core';
-import { getOctokit } from '@amezin/js-actions-octokit';
 import * as glob from '@actions/glob';
+import { getOctokit } from '@amezin/js-actions-octokit';
 
 type BlobEncoding = 'base64' | 'utf-8';
 
@@ -155,14 +155,18 @@ function parseFileSize(value: string): number {
         throw new Error(`Invalid size ${value}`);
     }
 
+    const [, num, unit] = match;
+
     return (
-        Number.parseInt(match[1], 10) *
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        Number.parseInt(num!, 10) *
         ({
-            k: 1000,
-            K: 1000,
-            m: 1000000,
-            M: 1000000,
-        }[match[2]] ?? 1)
+            '': 1,
+            'k': 1000,
+            'K': 1000,
+            'm': 1000000,
+            'M': 1000000,
+        }[unit ?? ''] ?? 1)
     );
 }
 
