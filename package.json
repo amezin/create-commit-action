@@ -30,5 +30,6 @@
     "build": "ncc build --source-map --license dependencies.txt src/main.ts",
     "format": "prettier --write .",
     "lint": "eslint"
-  }
+  },
+  "version": "2.0.1"
 }
