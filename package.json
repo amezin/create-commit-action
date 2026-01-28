@@ -25,9 +25,6 @@
     "@vercel/ncc": "0.38.4",
     "typescript": "5.9.3"
   },
-  "overrides": {
-    "@actions/core": "$@actions/core"
-  },
   "scripts": {
     "build": "ncc build --source-map --license dependencies.txt src/main.ts",
     "format": "prettier --write .",
