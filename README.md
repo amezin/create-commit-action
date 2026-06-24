@@ -23,8 +23,6 @@ https://github.com/amezin/pull-request-generator/blob/main/.github/workflows/mak
 
 - Conversion of line endings (should only matter on Windows)
 
-- Symlinks on Windows
-
 ## Inputs
 
 ### `message`
@@ -46,9 +44,6 @@ Relative paths are resolved against the default working directory -
 `${{ github.workspace }}` or `$GITHUB_WORKSPACE`.
 
 May include unchanged files.
-
-> [!WARNING]
-> Currently, symlinks are unintentionally followed on Windows.
 
 > [!WARNING]
 > Currently, it's not possible to delete files using this action.
