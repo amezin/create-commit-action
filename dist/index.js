@@ -30653,6 +30653,35 @@ function qstring(str) {
 /******/ }
 /******/ 
 /************************************************************************/
+/******/ /* webpack/runtime/compat get default export */
+/******/ (() => {
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__nccwpck_require__.n = (module) => {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			() => (module['default']) :
+/******/ 			() => (module);
+/******/ 		__nccwpck_require__.d(getter, { a: getter });
+/******/ 		return getter;
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/define property getters */
+/******/ (() => {
+/******/ 	// define getter functions for harmony exports
+/******/ 	__nccwpck_require__.d = (exports, definition) => {
+/******/ 		for(var key in definition) {
+/******/ 			if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			}
+/******/ 		}
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/hasOwnProperty shorthand */
+/******/ (() => {
+/******/ 	__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ })();
+/******/ 
 /******/ /* webpack/runtime/compat */
 /******/ 
 /******/ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\/\/\/\w:/) ? 1 : 0, -1) + "/";
@@ -30668,6 +30697,7 @@ const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import
 const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
 // EXTERNAL MODULE: external "node:util"
 var external_node_util_ = __nccwpck_require__(7975);
+var external_node_util_default = /*#__PURE__*/__nccwpck_require__.n(external_node_util_);
 ;// CONCATENATED MODULE: external "os"
 const external_os_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("os");
 ;// CONCATENATED MODULE: ./node_modules/@actions/core/lib/utils.js
@@ -41632,7 +41662,7 @@ throttling.VERSION = plugin_throttling_dist_bundle_VERSION;
 throttling.triggersNotification = triggersNotification;
 
 
-;// CONCATENATED MODULE: ./node_modules/@amezin/js-actions-octokit/lib/main.js
+;// CONCATENATED MODULE: ./src/octokit.ts
 
 
 
@@ -41644,16 +41674,16 @@ const defaultHeaders = {
 };
 const log = {
     debug: (...args) => {
-        core_debug(external_node_util_.format(...args));
+        core_debug(external_node_util_default().format(...args));
     },
     info: (...args) => {
-        info(external_node_util_.format(...args));
+        info(external_node_util_default().format(...args));
     },
     warn: (...args) => {
-        warning(external_node_util_.format(...args));
+        warning(external_node_util_default().format(...args));
     },
     error: (...args) => {
-        core_error(external_node_util_.format(...args));
+        core_error(external_node_util_default().format(...args));
     },
 };
 function requestDescription(octokit, options) {
@@ -41672,14 +41702,14 @@ function requestLog(octokit) {
     octokit.hook.wrap('request', (request, options) => {
         if (isDebug()) {
             startGroup(requestDescription(octokit, options));
-            info(external_node_util_.inspect(options));
+            info(external_node_util_default().inspect(options));
             endGroup();
         }
         const start = Date.now();
         return request(options)
             .then(response => {
             startGroup(responseDescription(octokit, options, response, start));
-            info(external_node_util_.inspect({ request: options, response }));
+            info(external_node_util_default().inspect({ request: options, response }));
             endGroup();
             return response;
         })
@@ -41688,7 +41718,7 @@ function requestLog(octokit) {
                 const { response } = error;
                 core_error(responseDescription(octokit, options, response, start));
                 startGroup('Details');
-                info(external_node_util_.inspect({
+                info(external_node_util_default().inspect({
                     request: options,
                     response,
                 }));
@@ -41720,15 +41750,18 @@ function withDefaultHeaders(octokit) {
     const request = octokit.request.defaults({ headers: defaultHeaders });
     return { request };
 }
-function main_getOctokit(token, options, ...additionalPlugins) {
+function octokit_getOctokit(token, options, ...additionalPlugins) {
     return getOctokit(token, {
         log,
         throttle,
         ...options,
     }, withDefaultHeaders, requestLog, retry, throttling, ...additionalPlugins);
 }
-//# sourceMappingURL=main.js.map
+
+;// CONCATENATED MODULE: ./package.json
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"UU":"@amezin/create-commit-action","rE":"2.0.3"}');
 ;// CONCATENATED MODULE: ./src/main.ts
+
 
 
 
@@ -41859,7 +41892,9 @@ async function run() {
     const blobs = files
         .map(readFile)
         .map(entry => makeRelative(toplevel, entry));
-    const github = main_getOctokit(token);
+    const github = octokit_getOctokit(token, {
+        userAgent: `${package_namespaceObject.UU}/v${package_namespaceObject.rE}`,
+    });
     const repo = new Repository(github, repository);
     const entries = await Promise.all(blobs.map(blob => uploadBlob(blob, repo, maxInlineBlobSize)));
     const tree = await repo.createTree(parent, entries);

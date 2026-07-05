@@ -5,7 +5,9 @@ import { inspect } from 'node:util';
 
 import * as core from '@actions/core';
 import * as glob from '@actions/glob';
-import { getOctokit } from '@amezin/js-actions-octokit';
+
+import { getOctokit } from './octokit.js';
+import pkg from '../package.json' with { type: 'json' };
 
 type BlobEncoding = 'base64' | 'utf-8';
 
@@ -195,7 +197,10 @@ async function run() {
         .map(readFile)
         .map(entry => makeRelative(toplevel, entry));
 
-    const github = getOctokit(token);
+    const github = getOctokit(token, {
+        userAgent: `${pkg.name}/v${pkg.version}`,
+    });
+
     const repo = new Repository(github, repository);
 
     const entries = await Promise.all(
