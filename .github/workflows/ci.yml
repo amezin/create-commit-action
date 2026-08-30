@@ -232,4 +232,3 @@ jobs:
       - run: test -z "$(git show --format= -- dist/index.js)"
 
       - run: test "$(readlink test-symlink)" = "testdir/test-file.txt"
-        if: runner.os != 'Windows'
