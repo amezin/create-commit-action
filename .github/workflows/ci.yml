@@ -143,7 +143,7 @@ jobs:
       - run: echo -n $'\xc3\x28' >invalid-utf8
 
       - id: test-commit
-        uses: ./.
+        uses: $/.
         with:
           message: 'Auto-generated test commit'
           files: |
