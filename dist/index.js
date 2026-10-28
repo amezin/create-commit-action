@@ -42903,7 +42903,7 @@ function octokit_getOctokit(token, options, ...additionalPlugins) {
 }
 
 ;// CONCATENATED MODULE: ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"UU":"@amezin/create-commit-action","rE":"2.0.5"}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"UU":"@amezin/create-commit-action","rE":"2.0.6"}');
 ;// CONCATENATED MODULE: ./src/main.ts
 
 
